@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fixed Baseline Logic Visual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#f6f5f1;--surface:#ffffffcc;--surface2:#efede7;--text:#201d18;--muted:#6f6b64;
+      --border:rgba(32,29,24,.12);--primary:#0d6e72;--primarySoft:rgba(13,110,114,.1);
+      --sell:#2f7d32;--sellSoft:rgba(47,125,50,.12);--hold:#8e4e1f;--holdSoft:rgba(142,78,31,.12);
+      --radius:18px;--shadow:0 12px 28px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,sans-serif;color:var(--text);background:linear-gradient(180deg,#f8f7f4,#f1ede6)}
+    .wrap{max-width:1180px;margin:0 auto;padding:24px}.hero{display:grid;gap:16px;margin-bottom:24px}
+    .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--primary);font-weight:800}
+    h1{margin:0;font-size:clamp(34px,4vw,58px);line-height:1.02;max-width:12ch}.lead{margin:0;color:var(--muted);max-width:78ch;font-size:17px}
+    .layout{display:grid;grid-template-columns:320px 1fr;gap:20px}.panel{background:var(--surface);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .controls,.main{padding:20px}.controls{position:sticky;top:18px;height:fit-content}.stack{display:grid;gap:14px}.field{display:grid;gap:7px}
+    label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}.field input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-size:15px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}.btn{border:none;border-radius:999px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:var(--primary);color:#fff}.secondary{background:var(--surface2);border:1px solid var(--border)}
+    .stats,.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stats{margin-bottom:18px}.card,.step,.row{border:1px solid var(--border);border-radius:16px;background:#fff;padding:14px}
+    .k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px}.v{font-size:28px;font-weight:800}
+    .flow{margin-bottom:18px}.step b{display:block;margin-bottom:8px}.step small{color:var(--muted)}
+    .timeline{display:grid;gap:10px}.head{display:grid;grid-template-columns:88px 1fr 1fr 1fr 1.1fr;gap:10px;padding:10px 14px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+    .row{display:grid;grid-template-columns:88px 1fr 1fr 1fr 1.1fr;gap:10px;align-items:start}.tag{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;font-size:13px;font-weight:800}.tag i{width:8px;height:8px;border-radius:999px;background:currentColor;display:block}.sell{color:var(--sell);background:var(--sellSoft)}.hold{color:var(--hold);background:var(--holdSoft)}
+    .note{margin-top:18px;padding:16px;border-radius:16px;background:var(--primarySoft);border:1px solid rgba(13,110,114,.16)} .note p{margin:0;color:#204447}
+    .mono{font-variant-numeric:tabular-nums}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.stats,.flow{grid-template-columns:1fr 1fr}.controls{position:static}.head,.row{grid-template-columns:1fr}}
+    @media (max-width:640px){.wrap{padding:16px}.stats,.flow{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Corrected logic</div>
+      <h1>Baseline stays fixed the whole time.</h1>
+      <p class="lead">This corrected example keeps the baseline locked at the value you set before the bot starts. If the baseline is $100, every 3-minute check compares the current HYPE value against that same $100 reference, even after one or more sells.</p>
+    </section>
+    <section class="layout">
+      <aside class="panel controls">
+        <div class="stack">
+          <div class="field"><label for="baseline">Fixed baseline</label><input id="baseline" type="number" step="0.01" value="100"></div>
+          <div class="field"><label for="trigger">Trigger gain</label><input id="trigger" type="number" step="0.01" value="1"></div>
+          <div class="field"><label for="sell">Sell amount each time</label><input id="sell" type="number" step="0.01" value="0.50"></div>
+          <div class="field"><label for="poll">Poll interval ms</label><input id="poll" type="number" step="1000" value="180000"></div>
+          <div class="field"><label for="series">Example values by check</label><input id="series" type="text" value="100.40, 100.90, 101.20, 101.80, 102.10, 100.95, 101.05"></div>
+          <div class="btns">
+            <button class="btn primary" id="runBtn">Run corrected example</button>
+            <button class="btn secondary" id="resetBtn">Reset</button>
+          </div>
+        </div>
+      </aside>
+      <section class="panel main">
+        <div class="stats">
+          <div class="card"><div class="k">Fixed baseline</div><div class="v mono" id="sumBaseline">$100.00</div></div>
+          <div class="card"><div class="k">Trigger</div><div class="v mono" id="sumTrigger">+$1.00</div></div>
+          <div class="card"><div class="k">Sell per hit</div><div class="v mono" id="sumSell">$0.50</div></div>
+          <div class="card"><div class="k">Interval</div><div class="v mono" id="sumPoll">180000 ms</div></div>
+        </div>
+        <div class="flow">
+          <div class="step"><b>1. Set baseline once</b><small>Example: baseline is manually set to $100 before the bot starts.</small></div>
+          <div class="step"><b>2. Recheck wallet</b><small>Every 3 minutes, the bot recalculates the wallet's HYPE value in stablecoin terms.</small></div>
+          <div class="step"><b>3. Compare to same baseline</b><small>Every check uses current value minus $100, not a newly recalculated reference.</small></div>
+          <div class="step"><b>4. Sell again if still eligible</b><small>If the value is still at least $1 above $100 on a later check, the bot can sell again.</small></div>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="note"><p id="noteText"></p></div>
+      </section>
+    </section>
+  </main>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => `$${Number(n).toFixed(2)}`;
+    function render() {
+      const baseline = Number($('baseline').value || 0);
+      const trigger = Number($('trigger').value || 0);
+      const sell = Number($('sell').value || 0);
+      const poll = Number($('poll').value || 0);
+      const series = $('series').value.split(',').map(v => Number(v.trim())).filter(v => !Number.isNaN(v));
+      $('sumBaseline').textContent = fmt(baseline);
+      $('sumTrigger').textContent = `+${fmt(trigger).slice(1)}`;
+      $('sumSell').textContent = fmt(sell);
+      $('sumPoll').textContent = `${poll.toLocaleString()} ms`;
+      const timeline = $('timeline');
+      timeline.innerHTML = '<div class="head"><div>Check</div><div>Current value</div><div>Fixed baseline</div><div>Gain vs baseline</div><div>Action</div></div>';
+      let sellCount = 0;
+      series.forEach((current, index) => {
+        const gain = current - baseline;
+        const eligible = gain >= trigger;
+        if (eligible) sellCount += 1;
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.innerHTML = `
+          <div><strong>+${((index + 1) * poll) / 60000} min</strong><br><span class="mono">#${index + 1}</span></div>
+          <div><div class="mono">${fmt(current)}</div><div style="font-size:13px;color:var(--muted)">Current HYPE value</div></div>
+          <div><div class="mono">${fmt(baseline)}</div><div style="font-size:13px;color:var(--muted)">Never changes</div></div>
+          <div><div class="mono">${gain >= 0 ? '+' : ''}${fmt(gain)}</div><div style="font-size:13px;color:var(--muted)">Trigger is ${fmt(trigger)}</div></div>
+          <div>
+            <span class="tag ${eligible ? 'sell' : 'hold'}"><i></i>${eligible ? 'SELL' : 'HOLD'}</span>
+            <div style="font-size:13px;color:var(--muted);margin-top:8px">${eligible ? `Swap ${fmt(sell)} of HYPE into stablecoin. Baseline stays ${fmt(baseline)}.` : `No swap. Baseline still stays ${fmt(baseline)}.`}</div>
+          </div>`;
+        timeline.appendChild(row);
+      });
+      $('noteText').textContent = `Correct behavior: the baseline does not move after a sell. In this run, the bot would trigger ${sellCount} ${sellCount === 1 ? 'time' : 'times'} because every eligible 3-minute check is still compared against the same fixed baseline of ${fmt(baseline)}.`;
+    }
+    $('runBtn').addEventListener('click', render);
+    $('resetBtn').addEventListener('click', () => {
+      $('baseline').value = 100; $('trigger').value = 1; $('sell').value = 0.50; $('poll').value = 180000;
+      $('series').value = '100.40, 100.90, 101.20, 101.80, 102.10, 100.95, 101.05';
+      render();
+    });
+    render();
+  </script>
+</body>
+</html>

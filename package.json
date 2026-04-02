@@ -1,0 +1,19 @@
+{
+  "name": "fixed-baseline-jup-bot",
+  "version": "1.0.0",
+  "description": "Railway-ready Jupiter swap bot with fixed baseline logic",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fixed Baseline Jupiter Bot Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f6f5f1;--surface:#fff;--surface2:#f1eee8;--text:#201d18;--muted:#6e6a64;--primary:#0c6c71;--success:#2d7d32;--border:rgba(32,29,24,.12);--radius:18px;--shadow:0 12px 28px rgba(0,0,0,.08)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,sans-serif;background:linear-gradient(180deg,#f8f7f4,#f0ece5);color:var(--text)} .wrap{max-width:1220px;margin:0 auto;padding:24px}
+    .hero{display:grid;gap:10px;margin-bottom:20px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)} h1{margin:0;font-size:clamp(30px,4vw,52px);line-height:1.04}.lead{margin:0;color:var(--muted);max-width:78ch}
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:20px}.panel{background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)} .left,.right{padding:20px}
+    .stack{display:grid;gap:14px}.field{display:grid;gap:7px} label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700} input{padding:12px 14px;border-radius:12px;border:1px solid var(--border);font-size:15px;background:#fff}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px}.k{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:8px}.v{font-size:24px;font-weight:800}
+    .btns{display:flex;gap:10px;flex-wrap:wrap}.btn{border:none;border-radius:999px;padding:12px 16px;font-weight:800;cursor:pointer}.primary{background:var(--primary);color:#fff}.secondary{background:var(--surface2);border:1px solid var(--border)}.success{background:var(--success);color:#fff}
+    table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden} th,td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:left;font-size:14px;vertical-align:top} th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)} .mono{font-variant-numeric:tabular-nums}
+    .notice{padding:14px;border-radius:14px;background:rgba(12,108,113,.08);border:1px solid rgba(12,108,113,.14);margin-bottom:16px;color:#234446}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}.links a{color:var(--primary);font-weight:700;text-decoration:none}
+    @media(max-width:1020px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}} @media(max-width:640px){.wrap{padding:16px}.stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Railway dashboard</div>
+      <h1>Fixed Baseline Jupiter Bot</h1>
+      <p class="lead">This dashboard uses fixed-baseline logic. If baseline is $100, the bot always compares against $100 on every poll, even after sells.</p>
+    </section>
+    <section class="grid">
+      <aside class="panel left">
+        <div class="stack">
+          <div class="field"><label>Monitor wallet</label><input id="monitorWallet" placeholder="Wallet public key"></div>
+          <div class="field"><label>Input mint</label><input id="inputMint" placeholder="HYPE mint"></div>
+          <div class="field"><label>Output mint</label><input id="outputMint" placeholder="Stablecoin mint"></div>
+          <div class="field"><label>Fixed baseline USD</label><input id="fixedBaselineUsd" type="number" step="0.01"></div>
+          <div class="field"><label>Trigger gain USD</label><input id="triggerGainUsd" type="number" step="0.01"></div>
+          <div class="field"><label>Sell USD amount</label><input id="sellUsdAmount" type="number" step="0.01"></div>
+          <div class="field"><label>Poll ms</label><input id="pollMs" type="number" step="1000"></div>
+          <div class="field"><label>Slippage bps</label><input id="slippageBps" type="number" step="1"></div>
+          <div class="btns">
+            <button class="btn primary" id="saveBtn">Save config</button>
+            <button class="btn success" id="startBtn">Start</button>
+            <button class="btn secondary" id="stopBtn">Stop</button>
+            <button class="btn secondary" id="tickBtn">Run 1 check</button>
+          </div>
+          <div class="links">
+            <a href="/fixed-baseline-visual.html" target="_blank" rel="noopener noreferrer">Open visual example</a>
+          </div>
+        </div>
+      </aside>
+      <section class="panel right">
+        <div class="notice" id="notice">Loading status...</div>
+        <div class="stats">
+          <div class="card"><div class="k">Mode</div><div class="v" id="modeCard">FIXED</div></div>
+          <div class="card"><div class="k">Running</div><div class="v" id="runningCard">No</div></div>
+          <div class="card"><div class="k">Last check</div><div class="v mono" id="lastCheckCard">—</div></div>
+          <div class="card"><div class="k">Fees tracked</div><div class="v mono" id="feesCard">$0.00</div></div>
+        </div>
+        <table>
+          <thead><tr><th>Time</th><th>Action</th><th>Current USD</th><th>Baseline</th><th>Gain</th><th>Details</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </section>
+    </section>
+  </main>
+  <script>
+    const ids=['monitorWallet','inputMint','outputMint','fixedBaselineUsd','triggerGainUsd','sellUsdAmount','pollMs','slippageBps'];
+    const byId=(id)=>document.getElementById(id);
+    const fmtUsd=(n)=>n==null?'—':`$${Number(n).toFixed(2)}`;
+
+    async function getJson(url, options){const res=await fetch(url,options);const data=await res.json();if(!res.ok) throw new Error(data.error||'Request failed');return data;}
+
+    async function refresh(){
+      const status=await getJson('/api/status');
+      byId('notice').textContent=status.lastError?`Last error: ${status.lastError}`:'Baseline mode is FIXED. A sell does not change baseline.';
+      byId('modeCard').textContent='FIXED';
+      byId('runningCard').textContent=status.running?'Yes':'No';
+      byId('lastCheckCard').textContent=status.lastCheckAt?new Date(status.lastCheckAt).toLocaleTimeString():'—';
+      byId('feesCard').textContent=fmtUsd(status.feesPaidUsd||0);
+      ids.forEach(id=>{ if(document.activeElement!==byId(id)) byId(id).value=status.config[id] ?? ''; });
+
+      const history=await getJson('/api/history');
+      const body=byId('historyBody');
+      body.innerHTML='';
+      if(!history.length){body.innerHTML='<tr><td colspan="6">No history yet.</td></tr>'; return;}
+      history.forEach(item=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${new Date(item.time).toLocaleString()}</td>
+          <td>${item.action||item.type||'—'}</td>
+          <td class="mono">${fmtUsd(item.currentUsdValue)}</td>
+          <td class="mono">${fmtUsd(item.fixedBaselineUsd)}</td>
+          <td class="mono">${item.gainUsd==null?'—':fmtUsd(item.gainUsd)}</td>
+          <td>${item.reason||item.note||item.signature||item.error||'—'}</td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function saveConfig(){
+      const payload={}; ids.forEach(id=>payload[id]=byId(id).value);
+      await getJson('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      await refresh();
+    }
+
+    byId('saveBtn').addEventListener('click', async()=>{try{await saveConfig();}catch(e){alert(e.message)}});
+    byId('startBtn').addEventListener('click', async()=>{try{await saveConfig();await getJson('/api/start',{method:'POST'});await refresh();}catch(e){alert(e.message)}});
+    byId('stopBtn').addEventListener('click', async()=>{try{await getJson('/api/stop',{method:'POST'});await refresh();}catch(e){alert(e.message)}});
+    byId('tickBtn').addEventListener('click', async()=>{try{await saveConfig();await getJson('/api/tick',{method:'POST'});await refresh();}catch(e){alert(e.message)}});
+    refresh().catch(err=>{byId('notice').textContent=err.message});
+    setInterval(()=>refresh().catch(()=>{}),5000);
+  </script>
+</body>
+</html>
