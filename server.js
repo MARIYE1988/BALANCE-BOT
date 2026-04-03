@@ -12,6 +12,11 @@ import {
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+app.get('/', (req, res) => res.sendFile('dashboard.html', { root: 'public' }));
+app.get('/example', (req, res) => res.sendFile('index.html', { root: 'public' }));
+app.get('/visual', (req, res) => res.sendFile('index.html', { root: 'public' }));
+
 app.use(express.static('public'));
 
 const connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed');
