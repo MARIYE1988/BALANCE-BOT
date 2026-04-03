@@ -12,6 +12,13 @@ import {
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+// Explicit routes BEFORE static middleware
+app.get('/', (req, res) => res.sendFile('dashboard.html', { root: 'public' }));
+app.get('/example', (req, res) => res.sendFile('index.html', { root: 'public' }));
+app.get('/visual', (req, res) => res.sendFile('index.html', { root: 'public' }));
+
+// Static files (CSS, JS, images, etc.)
 app.use(express.static('public'));
 
 const connection = new Connection(process.env.SOLANA_RPC_URL, 'confirmed');
